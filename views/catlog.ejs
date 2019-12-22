@@ -1,0 +1,258 @@
+<%- include shared/headerBLinks.ejs %>
+<!-- begin #page-container -->
+<div id="page-container" class="fade page-sidebar-fixed page-header-fixed">
+	<!-- begin #header -->
+	<%- include shared/header.ejs %>
+	<!-- end #header -->
+	<!-- begin #sidebar -->
+	<%- include shared/sidebar.ejs %>
+    <!-- end #sidebar -->
+    <div id="content" class="content">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <select name="productType" id="productType" class="form-control">
+                        <option value="">Select Product Type</option>
+                        <option value="1">Flinn360science</option>
+                        <option value="2">FlinnPrep</option>
+                    </select>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <select name="Category" id="Category" class="form-control">
+                        <option class="italic-class" value="">Select Category</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12"></div>
+            
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="labContainer"></div>
+            </div>
+        </div>
+    </div>
+    <%- include shared/footer.ejs %>
+
+    <script>
+       $(document).on("change", '#productType', function(e) {
+            var pid = $(this).val();
+            if(pid == 1 && pid){
+                let categoryArr = [
+                        { value:"18", text:"Acid-Base Equilibria"},
+                        { value:"26",text:"Animal Behavior"},
+                        { value:"7", text:"Atomic Structure"},
+                        { value:"29", text:"Biochemistry"},
+                        { value:"32", text:"Biotechnology"},
+                        { value:"30", text:"Cell Structure and Function"},
+                        { value:"9", text:"Chemical Bonding"},
+                        { value:"11", text:"Chemical Quantities"},
+                        { value:"12", text:"Chemical Reactions"},
+                        { value:"3",text:"Combustion—Matter, Energy, and Change"},
+                        { value:"34", text:"Earth Science"},
+                        { value:"6",text:"Earth's Interior"},
+                        { value:"5",text:"Energy Transfer and Conservation"},
+                        { value:"21",text:"Evolution"},
+                        { value:"25",text:"Genetics"},
+                        { value:"4",text:"Global Climate Change"},
+                        { value:"35",text:"Green Chemistry"},
+                        { value:"31",text:"Mitosis"},
+                        { value:"38",text:"Nuclear Processes"},
+                        { value:"19",text:"Ocean Acidification"},
+                        { value:"36",text:"Organic Chemistry"},
+                        { value:"24",text:"Osmosis and Diffusion"},
+                        { value:"23",text:"Oxidation-Reduction Reactions"},
+                        { value:"27",text:"Photosynthsis"},
+                        { value:"10",text:"Physical Properties of Materials"},
+                        { value:"15",text:"Properties of Gases"},
+                        { value:"17",text:"Reaction Rates and Equilibrium"},
+                        { value:"22",text:"Respiration"},
+                        { value:"33",text:"Safety Courses"},
+                        { value:"13",text:"Stoichiometry"},
+                        { value:"37",text:"The Behavior of Gases"},
+                        { value:"8",text:"The Periodic Table"},
+                        { value:"28",text:"The Scientific Method"},
+                        { value:"14",text:"Thermochemistry"},
+                        { value:"16",text:"Weather and Climate"}
+                ];
+                categoryArr.forEach(function(el){
+                    let option = document.createElement("option");
+                    option.text = el.text;
+                    option.value = el.value;
+                    document.getElementById('Category').appendChild(option);
+
+                });
+            }
+            else{
+                $('#Category').empty();
+                let option = document.createElement("option");
+                    option.text = 'Select Category';
+                    option.value = '';
+                $('#Category').append(option);
+            }
+            $(document).on("change", '#Category', function(e) {
+                var cid = $(this).val();
+                if(cid){
+                    $.ajax({
+                        type: "GET",
+                        url: '/category?id=' + cid,
+                        data: '',
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (response) {
+                            if (response != null) {
+                                parent.responseHolder = response;
+                                $('.labContainer').empty();
+                                structure(response);
+                                CardFlip();
+                            }
+   
+                        },
+                        failure: function (response) {
+                            alert(response.responseText);
+                        },
+                        error: function (response) {
+                            alert(response.responseText);
+
+                        }
+                    });
+                }
+                else{
+                    $('.labContainer').empty();
+                }
+            })
+            })
+        $('#labCategory').change(function () {
+        var LabCategoryId = parseInt($(this)[0].value);
+        if (LabCategoryId) {
+            $.ajax({
+                type: "GET",
+                url: baseUrl() + 'Home/LabDetails?LabCategoryId=' + LabCategoryId,
+                data: '',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+
+                    if (response != null) {
+                        $('.labContainer').empty();
+
+                        structure(response);
+                        CardFlip();
+                    }
+                    else {
+                        //  alert("Fail");
+                    }
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+        }
+        else {
+            parent.responseHolder = "";
+            $('.labContainer').empty();
+        }
+    });
+    /*------------------------------------------------------------------------------------------------*/
+
+
+    /*--------------------------------- Structure for Appending Div's Dyanmically --------------------*/
+        var structure = function (response){
+            var self = this,
+                rowCount = 0;
+            $.each(response, function (i) {
+                if (i % 3 == 0) {
+                    rowCount++;
+                    $('.labContainer').append('<div class="row margin-bottom cardPadding row' + rowCount +'"></div>');
+                }
+                if ($('.row' + rowCount).children().length < 3) {
+                    $('.row' + rowCount).append('<div class="col-lg-4 col-md-4 col-sm-4 verticalMargin cardColumn col-xs-12 smallCardHeight col'+ i +'"></div>');
+                }
+
+                    $('.col' + i).append('<div class="cardContainer">' +
+                        '<div class="flip-card">' +
+                        '<div class="flip-card-inner">' +
+                        '<div class="flip-card-front">' +
+
+                        '<div class="card card-front borderRadius front-height greenBackground whiteColor"><div class="imageArea">' +
+
+                        '<img class="card-img-top verticalPadding horizontalPadding" src="images/' + this.VideoLink +'.png" onerror="this.src=\'images/noimage.jpg\'" alt="">' +
+
+                        '</div><div class="card-body borderBottom horizontalPadding">' +
+                        '<h5 class="card-title fontLarge"> ' + this.Title + '</h5>' +
+                        '</div>' +
+
+                        '</div>' +
+                        '</div>' +
+
+                        '<div class="flip-card-back">' +
+                        '<div class="card card-reverse">' +
+                        '<div class="card-body card-body-reverse whiteColor fontSmall horizontalPadding verticalPadding">' + this.Description +
+                        '</div>' +
+
+                        '<div class="backFlipArea"></div>' +
+
+                        '<div class="alignBottom zeroBorder">' +
+                        '<div class="text-center">' +
+                        '<a href="/Content/DOC/' + this.SyllabusLink +'" target="_blank"><span class="horizontalPadding whiteColor fontSmall fontWeight" >Overview</span></a>' +
+                        '</div>' +
+
+                        '<div class="row justify-content-center verticalMargin horizontalPadding">' +
+                        '<div class="col-lg-12 col-md-12 col-sm-12">' +
+                        '<a href="' + this.ClassroomPurchaseLink +'" target="_blank"><div class="btn text-center fontSmall borderRadius verticalPadding horizontalPadding whiteBackground greenColor back-btn" style="width: 100%">Buy Now </div></a>' +
+                        '</div>' +
+                        '</div>' +
+
+                        '</div>' +
+
+                        '</div>' +
+                        '</div>' +
+
+                        '</div>' +
+                        '</div>' +
+                        '</div>' );
+            });
+        };
+    /*------------------------------------------------------------------------------------------------- */
+
+    /*------------------------------------ Card Flip -------------------------------------------------- */
+
+        var CardFlip = function () {
+            self.isiOS = navigator.userAgent.match('iPad') || navigator.userAgent.match('iPhone') || navigator.userAgent.match('iPod');
+            self.isAndroid = navigator.userAgent.match('Android');
+            if (self.isiOS) {
+                this.frontButton = $(".flip-card-front");
+                this.backButton = $(".backFlipArea");
+            }
+            else {
+                this.frontButton = $(".flip-card-front");
+                this.backButton = $(".card-reverse");
+            }
+            
+            this.frontButton.click(function () {
+                var thisCard = $(this).parent();
+
+                if (self.isiOS) {
+                    $(thisCard).css({'transform': 'rotateY(180deg)'});
+                    $(this).children().hide();
+                }
+                else {
+                    $(thisCard).css({ 'transform': 'rotateY(180deg)'});
+                }
+            });
+
+            this.backButton.click(function () {
+                var thisBackCard = $(this).parent().parent().parent();
+                if (self.isiOS) {
+                    $(thisBackCard).css({'transform': 'rotateY(0deg)'});
+                    $(thisBackCard.children()[0]).children().show();
+                }
+                else {
+                    $(thisBackCard).children().css({'transform': 'rotateY(0deg)'});
+                }
+            });
+        }
+    </script>
